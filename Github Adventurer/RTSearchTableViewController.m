@@ -6,17 +6,17 @@
 //  Copyright (c) 2014 Ryo Tulman. All rights reserved.
 //
 
-#import "RTRepoTableViewController.h"
+#import "RTSearchTableViewController.h"
 #import "Repo.h"
 #import "RTRepoDetailViewController.h"
 
-@interface RTRepoTableViewController () <UISearchBarDelegate>
+@interface RTSearchTableViewController () <UISearchBarDelegate>
 
 @property (nonatomic, strong) NSMutableArray *repos;
 
 @end
 
-@implementation RTRepoTableViewController
+@implementation RTSearchTableViewController
 
 - (id)initWithStyle:(UITableViewStyle)style
 {
@@ -30,6 +30,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+    
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
     
@@ -41,6 +43,10 @@
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+- (IBAction)handleRootButtonPressed:(id)sender {
+    [self.rootDelegate handleRootButtonPressed];
 }
 
 #pragma mark - Table view data source

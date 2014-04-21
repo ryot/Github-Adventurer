@@ -7,7 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "RTRootMenuButtonProtocol.h"
 
-@interface RTRepoTableViewController : UITableViewController
+@interface RTSearchTableViewController : UITableViewController
+
+@property (nonatomic, unsafe_unretained) id<RTRootMenuButtonProtocol> rootDelegate;
 
 @end
