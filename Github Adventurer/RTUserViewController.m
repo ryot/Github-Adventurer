@@ -7,36 +7,83 @@
 //
 
 #import "RTUserViewController.h"
+#import "Repo.h"
+#import "RTNetworkController.h"
+#import "RTUserData.h"
+#import "RTRepoDetailViewController.h"
 
-@interface RTUserViewController ()
+@interface RTUserViewController () <UITableViewDelegate, UITableViewDataSource, RTNetworkControllerOAuthDelegate>
+
+@property (weak, nonatomic) RTNetworkController *networkController;
+@property (weak, nonatomic) IBOutlet UILabel *usernameLabel;
+@property (weak, nonatomic) IBOutlet UITableView *reposTableView;
+@property (strong, nonatomic, readonly) RTUserData *userData;
 
 @end
 
 @implementation RTUserViewController
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (self) {
-        // Custom initialization
-    }
-    return self;
-}
-
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
+    _reposTableView.layer.borderWidth = 2;
+    _reposTableView.layer.borderColor = [UIColor darkGrayColor].CGColor;
+    [[RTNetworkController shared] setDelegate:self];
+    if ([RTNetworkController shared].token) {
+        [self didSetOAuthToken];
+    }
+}
+
+- (IBAction)handleRootButtonPressed:(id)sender {
+    [self.rootDelegate handleRootButtonPressed];
+}
+
+- (IBAction)authButtonPressed:(UIButton *)sender {
+    if ([RTNetworkController shared].token) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Already Authorized" message:nil delegate:self cancelButtonTitle:@"Ok" otherButtonTitles:nil];
+        [alert show];
+    } else { //get auth
+        [[RTNetworkController shared] requestOAuthAccessWithParameters:@[@"user"]];
+    }
+}
+
+-(void)didSetOAuthToken
+{
+    [[RTNetworkController shared] getUserInfoWithCompletion:^{
+        _usernameLabel.text = self.userData.userDict[@"login"];
+        [_usernameLabel sizeToFit];
+        [[RTNetworkController shared] getUserReposWithCompletion:^{
+            [_reposTableView reloadData];
+        }];
+    }];
+}
+
+-(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return self.userData.userReposArray.count;
+}
+
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    UITableViewCell *cell = [self.reposTableView dequeueReusableCellWithIdentifier:@"UserRepoCell" forIndexPath:indexPath];
+    Repo *thisRepo = self.userData.userReposArray[indexPath.row];
+    cell.textLabel.text = thisRepo.name;
+    return cell;
+}
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    [_reposTableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+-(RTUserData *)userData {
+    return [RTUserData shared];
 }
 
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
-}
-
-- (IBAction)handleRootButtonPressed:(id)sender {
-    [self.rootDelegate handleRootButtonPressed];
 }
 
 /*

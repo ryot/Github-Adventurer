@@ -1,18 +1,18 @@
 //
-//  RTRepoDetailViewController.m
+//  RTUserDetailViewController.m
 //  Github Adventurer
 //
-//  Created by Ryo Tulman on 3/17/14.
+//  Created by Ryo Tulman on 4/24/14.
 //  Copyright (c) 2014 Ryo Tulman. All rights reserved.
 //
 
-#import "RTRepoDetailViewController.h"
+#import "RTUserDetailViewController.h"
 
-@interface RTRepoDetailViewController () <UIWebViewDelegate>
+@interface RTUserDetailViewController () <UIWebViewDelegate>
 
 @end
 
-@implementation RTRepoDetailViewController
+@implementation RTUserDetailViewController
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -26,7 +26,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
+
     [self configureView];
 }
 
@@ -36,10 +36,10 @@
     // Dispose of any resources that can be recreated.
 }
 
--(void)setThisRepo:(Repo *)newRepo
+-(void)setThisUser:(GithubUser *)newUser
 {
-    if (_thisRepo != newRepo) {
-        _thisRepo = newRepo;
+    if (_thisUser != newUser) {
+        _thisUser = newUser;
         
         // Update the view.
         [self configureView];
@@ -49,17 +49,16 @@
 - (void)configureView
 {
     // Update the user interface for the detail item.
-    if (self.thisRepo.html_url) {
-        if (!self.thisRepo.htmlCache) {
-            NSData *cacheData = [NSData dataWithContentsOfURL:_thisRepo.html_url];
+    if (self.thisUser.html_url) {
+        if (!self.thisUser.htmlCache) {
+            NSData *cacheData = [NSData dataWithContentsOfURL:_thisUser.html_url];
             NSString *cacheString = [[NSString alloc] initWithData:cacheData encoding:NSUTF8StringEncoding];
-            _thisRepo.htmlCache = cacheString;
+            _thisUser.htmlCache = cacheString;
             [self configureView];
         } else {
             NSOperationQueue *pageLoadQueue = [NSOperationQueue new];
             [pageLoadQueue addOperationWithBlock:^{
-                [_repoWebView loadHTMLString:_thisRepo.htmlCache baseURL:nil];
-
+                [_userWebView loadHTMLString:_thisUser.htmlCache baseURL:nil];
             }];
         }
     }

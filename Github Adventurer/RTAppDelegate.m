@@ -7,12 +7,19 @@
 //
 
 #import "RTAppDelegate.h"
+#import "RTNetworkController.h"
 
 @implementation RTAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
+    return YES;
+}
+
+-(BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
+{
+    [[RTNetworkController shared] handleOAuthCallbackWithURL:url];
     return YES;
 }
 							

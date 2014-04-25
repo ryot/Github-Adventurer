@@ -8,15 +8,21 @@
 
 #import <Foundation/Foundation.h>
 
-@interface Repo : NSObject
+@protocol RepoImageDownloadDelegate <NSObject>
 
-- (id)initWithJSON:(NSDictionary *)json;
+-(void)repoImageDoneDownloading:(id)thisRepo;
+
+@end
+
+@interface Repo : NSObject
 
 @property (nonatomic,strong) NSString *name;
 @property (nonatomic,strong) NSString *description;
 @property (nonatomic,strong) UIImage *authorAvatar;
 @property (nonatomic,strong) NSURL *html_url;
-
 @property (nonatomic, strong) NSString *htmlCache;
+@property (nonatomic, unsafe_unretained) id<RepoImageDownloadDelegate> downloadDelegate;
+
+- (id)initWithJSON:(NSDictionary *)json isUserRepo:(BOOL)userRepo;
 
 @end

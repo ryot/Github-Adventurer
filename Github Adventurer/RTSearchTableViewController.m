@@ -10,7 +10,7 @@
 #import "Repo.h"
 #import "RTRepoDetailViewController.h"
 
-@interface RTSearchTableViewController () <UISearchBarDelegate>
+@interface RTSearchTableViewController () <UISearchBarDelegate, RepoImageDownloadDelegate>
 
 @property (nonatomic, strong) NSMutableArray *repos;
 
@@ -30,8 +30,6 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
-    
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
     
@@ -50,13 +48,9 @@
 }
 
 #pragma mark - Table view data source
--(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 1;
-}
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-#warning Incomplete method implementation.
     // Return the number of rows in the section.
     return _repos.count;
 }
@@ -84,25 +78,20 @@
     [downloadQueue addOperationWithBlock:^{
         
         NSString *searchURLString = [NSString stringWithFormat:@"https://api.github.com/search/repositories?q=%@", query];
-        
         NSURL *searchURL = [NSURL URLWithString:searchURLString];
-        
         NSData *searchData = [NSData dataWithContentsOfURL:searchURL];
         
         NSDictionary *searchDict = [NSJSONSerialization JSONObjectWithData:searchData
                                                                    options:NSJSONReadingMutableContainers
                                                                      error:nil];
-        
         NSMutableArray *tempRepos = [NSMutableArray new];
-        
         for (NSDictionary *repo in [searchDict objectForKey:@"items"]) {
-            Repo *downloadedRepo = [[Repo alloc] initWithJSON:repo];
+            Repo *downloadedRepo = [[Repo alloc] initWithJSON:repo isUserRepo:NO];
+            downloadedRepo.downloadDelegate = self;
             [tempRepos addObject:downloadedRepo];
         }
         
-        NSOperationQueue *mainQueue = [NSOperationQueue mainQueue];
-        
-        [mainQueue addOperationWithBlock:^{
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             _repos = tempRepos;
             [self.tableView reloadData];
         }];
@@ -110,6 +99,21 @@
     }];
 }
 
+-(void)repoImageDoneDownloading:(id)thisRepo
+{
+    [self.tableView reloadData];
+}
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
+    RTRepoDetailViewController *detail = [self.storyboard instantiateViewControllerWithIdentifier:@"repoDetailVC"];
+    detail.title = @"Repo";
+    detail.thisRepo = [self.repos objectAtIndex:indexPath.row];
+    [self.navigationController pushViewController:detail animated:YES];
+}
+
+/*
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
     if ([segue.identifier isEqualToString:@"detailSegue"]) {
@@ -118,7 +122,7 @@
         detail.thisRepo = [self.repos objectAtIndex:selectedRow];
     }
 }
-
+*/
 /*
 // Override to support conditional editing of the table view.
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath

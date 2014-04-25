@@ -10,7 +10,7 @@
 
 @implementation Repo
 
-- (id)initWithJSON:(NSDictionary *)json
+- (id)initWithJSON:(NSDictionary *)json isUserRepo:(BOOL)userRepo
 {
     if (self = [super init]) {
         self.name = [json objectForKey:@"name"];
@@ -18,13 +18,13 @@
         if ([json objectForKey:@"description"] != [NSNull null]) {
             self.description = [json objectForKey:@"description"];
         }
-        
         self.html_url = [NSURL URLWithString:[json objectForKey:@"html_url"]];
         
-        NSURL *avatarURL = [NSURL URLWithString:[json[@"owner"] objectForKey:@"avatar_url"]];
-        [self downloadImageForURL:avatarURL];
+        if (!userRepo) {
+            NSURL *avatarURL = [NSURL URLWithString:[json[@"owner"] objectForKey:@"avatar_url"]];
+            [self downloadImageForURL:avatarURL];
+        }
     }
-    
     return self;
 }
 
@@ -34,6 +34,9 @@
     [downloadQueue addOperationWithBlock:^{
         NSData *avatarData = [NSData dataWithContentsOfURL:url];
         self.authorAvatar = [UIImage imageWithData:avatarData];
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            [self.downloadDelegate repoImageDoneDownloading:self];
+        }];
     }];
 }
 
